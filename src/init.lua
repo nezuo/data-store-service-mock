@@ -102,6 +102,8 @@ function DataStoreServiceMock:GetRequestBudgetForRequestType(requestType)
 		error("TODO")
 	end
 
+	return 9999999999
+
 	-- return budget
 end
 
