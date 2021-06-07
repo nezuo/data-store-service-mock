@@ -1,0 +1,14 @@
+{
+    "name": "data-store-service-mock-test",
+    "tree": {
+        "$className": "DataModel",
+
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+
+            "DataStoreServiceMock": {
+                "$path": ""
+            }
+        }
+    }
+}
