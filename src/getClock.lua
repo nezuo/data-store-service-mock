@@ -1,3 +1,0 @@
-return {
-	getClock = os.clock(),
-}

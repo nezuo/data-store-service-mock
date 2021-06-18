@@ -57,6 +57,8 @@ local function isValueValid(value, valueType)
 	if valueType == "string" and utf8.len(value) == nil then
 		return false, "cannot store strings that are invalid UTF-8"
 	end
+
+	return true
 end
 
 local function isValidTable(tbl, visited, path)
@@ -70,10 +72,12 @@ local function isValidTable(tbl, visited, path)
 
 		local keyType = typeof(key)
 
-		local isValidNumber, invalidNumberReason = isNumberValid(key)
+		if keyType == "number" then
+			local isValidNumber, invalidNumberReason = isNumberValid(key)
 
-		if not isValidNumber then
-			return false, path, invalidNumberReason
+			if not isValidNumber then
+				return false, path, invalidNumberReason
+			end
 		end
 
 		if tableType == "Dictionary" and keyType ~= "string" then
@@ -109,7 +113,7 @@ local function isValidTable(tbl, visited, path)
 				return false, path
 			end
 
-			local isValid, invalidPath, reason = isValidTable(value)
+			local isValid, invalidPath, reason = isValidTable(value, visited, path)
 
 			if not isValid then
 				return isValidTable, invalidPath, reason
@@ -140,6 +144,7 @@ local function assertValidTableValue(value)
 	end
 end
 
+-- TODO: This really needs to be tested!
 local function assertValidValue(value)
 	local valueType = typeof(value)
 

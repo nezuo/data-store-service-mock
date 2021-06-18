@@ -1,21 +1,8 @@
 local RunService = game:GetService("RunService")
 
 local Constants = require(script.Constants)
-local GlobalDataStore = require(script.GlobalDataStore)
-local OrderedDataStore = require(script.OrderedDataStore)
 local getValidString = require(script.getValidString)
-
---<< clean this
-local dataStoreRequestTypes = {}
-
-for _, enum in ipairs(Enum.DataStoreRequestType:GetEnumItems()) do
-	dataStoreRequestTypes[enum] = enum
-end
---<<
-
-local defaultDataStore = nil
-local globalDataStores = {}
-local orderedDataStores = {}
+local Managers = require(script.Managers)
 
 local function assertIsServer()
 	if not RunService:IsServer() then
@@ -59,25 +46,13 @@ function DataStoreServiceMock:GetDataStore(name, scope)
 	name = getValidName(name)
 	scope = getValidScope(scope)
 
-	if globalDataStores[name] == nil then
-		globalDataStores[name] = {}
-	end
-
-	if globalDataStores[name][scope] == nil then
-		globalDataStores[name][scope] = GlobalDataStore.new(name, scope)
-	end
-
-	return globalDataStores[name][scope]
+	return Managers.DataStores.getGlobalDataStore(name, scope)
 end
 
 function DataStoreServiceMock:GetGlobalDataStore()
 	assertIsServer()
 
-	if defaultDataStore == nil then
-		defaultDataStore = GlobalDataStore.global()
-	end
-
-	return defaultDataStore
+	return Managers.DataStores.getDefaultDataStore()
 end
 
 function DataStoreServiceMock:GetOrderedDataStore(name, scope)
@@ -86,25 +61,13 @@ function DataStoreServiceMock:GetOrderedDataStore(name, scope)
 	name = getValidName(name)
 	scope = getValidScope(scope)
 
-	if orderedDataStores[name] == nil then
-		orderedDataStores[name] = {}
-	end
-
-	if orderedDataStores[name][scope] == nil then
-		orderedDataStores[name][scope] = OrderedDataStore.new(name, scope)
-	end
-
-	return orderedDataStores[name][scope]
+	return Managers.getOrderedDataStore(name, scope)
 end
 
 function DataStoreServiceMock:GetRequestBudgetForRequestType(requestType)
-	if dataStoreRequestTypes[requestType] == nil then
-		error("TODO")
-	end
+	-- todo: assert(is a DataStoreRequestType)
 
-	return 9999999999
-
-	-- return budget
+	return Managers.Budget.getBudget(requestType)
 end
 
 return DataStoreServiceMock
