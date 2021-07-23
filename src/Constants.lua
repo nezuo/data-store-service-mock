@@ -1,5 +1,5 @@
 return {
-	IS_UNIT_TEST_MODE = true,
+	IS_UNIT_TEST_MODE = false,
 
 	YIELD_TIME_MIN = 0.2,
 	YIELD_TIME_MAX = 0.5,
