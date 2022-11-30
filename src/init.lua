@@ -38,7 +38,9 @@ local function getValidScope(scope)
 	return scope
 end
 
-local DataStoreServiceMock = {}
+local DataStoreServiceMock = {
+	Managers = Managers,
+}
 
 function DataStoreServiceMock:GetDataStore(name, scope)
 	assertIsServer()
