@@ -3,7 +3,6 @@ local RunService = game:GetService("RunService")
 
 local Clock = require(script.Parent.Parent.Managers.Clock)
 local Constants = require(script.Parent.Parent.Constants)
-local wait = require(script.Parent.Parent.wait)
 
 local budgetRequestQueues = {}
 local budgets = {}
@@ -27,10 +26,8 @@ local function hasBudgets(requestTypes)
 end
 
 local function updateUpdateAsyncBudget()
-	budgets[Enum.DataStoreRequestType.UpdateAsync] = math.min(
-		budgets[Enum.DataStoreRequestType.GetAsync],
-		budgets[Enum.DataStoreRequestType.SetIncrementAsync]
-	)
+	budgets[Enum.DataStoreRequestType.UpdateAsync] =
+		math.min(budgets[Enum.DataStoreRequestType.GetAsync], budgets[Enum.DataStoreRequestType.SetIncrementAsync])
 end
 
 local function stealBudget(requestTypes)
@@ -120,17 +117,23 @@ function Budget.update()
 end
 
 function Budget.start()
-	if not RunService:IsServer() or Constants.IS_UNIT_TEST_MODE then
+	if not RunService:IsServer() then
 		return
 	end
 
-	coroutine.wrap(function()
-		while true do
-			wait(Constants.BUDGET_UPDATE_INTERVAL)
+	local updateAt = os.clock()
 
-			Budget.update()
+	local connection
+	connection = RunService.Heartbeat:Connect(function()
+		if Constants.IS_UNIT_TEST_MODE then
+			connection:Disconnect()
 		end
-	end)()
+
+		if os.clock() >= updateAt then
+			Budget.update()
+			updateAt += Constants.BUDGET_UPDATE_INTERVAL
+		end
+	end)
 end
 
 function Budget.yieldForWriteCooldownAndBudget(key, cooldownAt, writeLocks, requestTypes)
