@@ -39,6 +39,7 @@ local function getValidScope(scope)
 end
 
 local DataStoreServiceMock = {
+	Constants = Constants,
 	Managers = Managers,
 }
 
