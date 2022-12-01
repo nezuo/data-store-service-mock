@@ -30,6 +30,8 @@ GlobalDataStore.__index = GlobalDataStore
 function GlobalDataStore.new(name, scope)
 	local self = setmetatable({}, GlobalDataStore)
 
+	self.Name = name
+
 	self._data = Data.Global.get(name, scope)
 	self._getCache = {}
 	self._writeCooldowns = {}
