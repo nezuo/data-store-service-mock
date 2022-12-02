@@ -41,11 +41,11 @@ local function stealBudget(requestTypes)
 end
 
 local function isRequestOnCooldown(budgetRequest)
-	if budgetRequest.cooldownAt == nil then
+	if budgetRequest.removeCooldownAt == nil then
 		return false
 	end
 
-	return Clock.get() - budgetRequest.cooldownAt >= Constants.WRITE_COOLDOWN
+	return Clock.get() < budgetRequest.removeCooldownAt
 end
 
 local function isOnWriteLock(budgetRequest)
@@ -144,7 +144,7 @@ function Budget.yieldForWriteCooldownAndBudget(key, cooldownAt, writeLocks, requ
 	end
 
 	local budgetRequest = {
-		cooldownAt = cooldownAt,
+		removeCooldownAt = cooldownAt + Constants.WRITE_COOLDOWN,
 		key = key,
 		requestTypes = requestTypes,
 		resolved = false,
