@@ -1,55 +1,48 @@
 return {
-	IS_UNIT_TEST_MODE = false,
+	MAX_NAME_LENGTH = 50, -- The maximum characters allowed in a DataStore's name.
+	MAX_SCOPE_LENGTH = 50, -- The maximum characters allowed in a DataStore's scope.
 
-	YIELD_TIME_MIN = 0.2,
-	YIELD_TIME_MAX = 0.5,
+	MAX_THROTTLE_QUEUE_SIZE = 30, -- The amount of requests that can be throttled per request type at once before the request will error.
 
-	MAX_NAME_LENGTH = 50, -- The maximum number of characters allowed in a DataStore's name.
-	MAX_SCOPE_LENGTH = 50, -- The maximum number of characters allowed in a DataStore's scope.
-	MAX_KEY_LENGTH = 50, -- The maximum number of characters allowed in a DataStore key.
-	MAX_DATA_LENGTH = 4194301, -- The maximum number of characters allowed in a JSON encoded version of the data.
+	BUDGET_UPDATE_INTERVAL = 1,
 
-	WRITE_COOLDOWN = 6, -- The amount of time in seconds between writes on one key in a particular DataStore.
-	GET_COOLDOWN = 5, -- The amount of time in seconds........ TODO
+	WRITE_COOLDOWN = 6,
+	GET_CACHE_DURATION = 5,
 
-	THROTTLE_QUEUE_SIZE = 30, -- The amount of requests that can be throttled at once before requests will error.
-
-	BUDGET_UPDATE_INTERVAL = 1, -- The interval in seconds at which budgets are updated.
-
-	BUDGETS = {
+	REQUEST_BUDGETS = {
 		[Enum.DataStoreRequestType.GetAsync] = {
 			INITIAL_BUDGET = 100,
-			ADDED_RATE = 60,
-			ADDED_PER_PLAYER_RATE = 10,
-			MAXIMUM_BUDGET_FACTOR = 3,
+			RATE = 60,
+			RATE_PER_PLAYER = 10,
+			MAX_BUDGET_FACTOR = 3,
 		},
 
 		[Enum.DataStoreRequestType.SetIncrementAsync] = {
 			INITIAL_BUDGET = 100,
-			ADDED_RATE = 60,
-			ADDED_PER_PLAYER_RATE = 10,
-			MAXIMUM_BUDGET_FACTOR = 3,
+			RATE = 60,
+			RATE_PER_PLAYER = 10,
+			MAX_BUDGET_FACTOR = 3,
 		},
 
 		[Enum.DataStoreRequestType.SetIncrementSortedAsync] = {
 			INITIAL_BUDGET = 50,
-			ADDED_RATE = 30,
-			ADDED_PER_PLAYER_RATE = 5,
-			MAXIMUM_BUDGET_FACTOR = 3,
+			RATE = 30,
+			RATE_PER_PLAYER = 5,
+			MAX_BUDGET_FACTOR = 3,
 		},
 
 		[Enum.DataStoreRequestType.OnUpdate] = {
 			INITIAL_BUDGET = 30,
-			ADDED_RATE = 30,
-			ADDED_PER_PLAYER_RATE = 5,
-			MAXIMUM_BUDGET_FACTOR = 1,
+			RATE = 30,
+			RATE_PER_PLAYER = 5,
+			MAX_BUDGET_FACTOR = 1,
 		},
 
 		[Enum.DataStoreRequestType.GetSortedAsync] = {
 			INITIAL_BUDGET = 10,
-			ADDED_RATE = 5,
-			ADDED_PER_PLAYER_RATE = 2,
-			MAXIMUM_BUDGET_FACTOR = 3,
+			RATE = 5,
+			RATE_PER_PLAYER = 2,
+			MAX_BUDGET_FACTOR = 3,
 		},
 	},
 }

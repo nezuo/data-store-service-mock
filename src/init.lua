@@ -1,76 +1,75 @@
 local RunService = game:GetService("RunService")
 
+local Budget = require(script.Budget)
 local Constants = require(script.Constants)
-local getValidString = require(script.getValidString)
-local Managers = require(script.Managers)
+local GlobalDataStore = require(script.GlobalDataStore)
+local SimulatedErrors = require(script.SimulatedErrors)
+local validateString = require(script.validateString)
 
-local function assertIsServer()
+local function assertServer()
 	if not RunService:IsServer() then
-		error("DataStore can't be accessed from the client", 3)
+		error("DataStore can't be accessed from the client")
 	end
 end
 
-local function getValidName(name)
-	name = getValidString(name)
+local DataStoreServiceMock = {}
+DataStoreServiceMock.__index = DataStoreServiceMock
 
-	if #name == 0 then
-		error("DataStore name can't be empty string", 3)
-	elseif #name > Constants.MAX_NAME_LENGTH then
-		error(string.format("DataStore name is too long (exceeds %d characters)", Constants.MAX_NAME_LENGTH), 3)
-	end
-
-	return name
+function DataStoreServiceMock.new()
+	return setmetatable({
+		dataStores = {},
+		budget = Budget.new(os.clock),
+		clock = os.clock,
+	}, DataStoreServiceMock)
 end
 
-local function getValidScope(scope)
-	if scope == nil then
-		return "global"
+function DataStoreServiceMock.manual()
+	local now = 0
+
+	local function clock()
+		return now
 	end
 
-	scope = getValidString(scope)
+	local self = setmetatable({
+		dataStores = {},
+		errors = SimulatedErrors.new(),
+		budget = Budget.manual(clock),
+	}, DataStoreServiceMock)
 
-	if #scope == 0 then
-		error("DataStore scope can't be empty string", 3)
-	elseif #scope > Constants.MAX_SCOPE_LENGTH then
-		error(string.format("DataStore scope is too long (exceeds %d characters)", Constants.MAX_SCOPE_LENGTH), 3)
+	self.clock = clock
+
+	function self:tick(seconds)
+		now += seconds
+		self.budget:tick(seconds)
 	end
 
-	return scope
+	return DataStoreServiceMock
 end
-
-local DataStoreServiceMock = {
-	Constants = Constants,
-	Managers = Managers,
-}
 
 function DataStoreServiceMock:GetDataStore(name, scope)
-	assertIsServer()
+	assertServer()
+	validateString("name", name, Constants.MAX_NAME_LENGTH)
+	validateString("scope", scope, Constants.MAX_SCOPE_LENGTH)
 
-	name = getValidName(name)
-	scope = getValidScope(scope)
+	if self.dataStores[name] == nil then
+		self.dataStores[name] = {}
+	end
 
-	return Managers.DataStores.getGlobalDataStore(name, scope)
-end
+	if self.dataStores[name][scope] == nil then
+		self.dataStores[name][scope] = GlobalDataStore.new(self.clock, self.errors)
+	end
 
-function DataStoreServiceMock:GetGlobalDataStore()
-	assertIsServer()
-
-	return Managers.DataStores.getDefaultDataStore()
-end
-
-function DataStoreServiceMock:GetOrderedDataStore(name, scope)
-	assertIsServer()
-
-	name = getValidName(name)
-	scope = getValidScope(scope)
-
-	return Managers.getOrderedDataStore(name, scope)
+	return self.dataStores[name][scope]
 end
 
 function DataStoreServiceMock:GetRequestBudgetForRequestType(requestType)
-	-- todo: assert(is a DataStoreRequestType)
+	local budget = self.budget.budgets[requestType]
 
-	return Managers.Budget.getBudget(requestType)
+	if budget == nil then
+		error("`requestType` must be an Enum.DataStoreRequestType")
+	end
+
+	return budget
 end
 
 return DataStoreServiceMock
