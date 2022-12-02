@@ -114,6 +114,8 @@ end
 function Budget.update()
 	updateBudgets()
 	updateBudgetRequestQueues()
+
+	lastUpdateAt = Clock.get()
 end
 
 function Budget.start()
@@ -184,6 +186,8 @@ function Budget.yieldForBudget(requestTypes)
 
 	-- TODO: Trigger a warning when things are added to the queue.
 
+	warn("Yielding for budget")
+
 	table.insert(budgetRequestQueues[mainRequestType], budgetRequest)
 
 	if not budgetRequest.resolved then
@@ -209,6 +213,8 @@ function Budget.reset()
 		budgetRequestQueues[requestType] = {}
 		budgets[requestType] = budget.INITIAL_BUDGET
 	end
+
+	lastUpdateAt = Clock.get()
 end
 
 function Budget.resetThrottleQueueSize()
