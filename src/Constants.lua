@@ -1,6 +1,7 @@
 return {
-	MAX_NAME_LENGTH = 50, -- The maximum characters allowed in a DataStore's name.
-	MAX_SCOPE_LENGTH = 50, -- The maximum characters allowed in a DataStore's scope.
+	MAX_NAME_LENGTH = 50,
+	MAX_SCOPE_LENGTH = 50,
+	MAX_KEY_LENGTH = 50,
 
 	MAX_THROTTLE_QUEUE_SIZE = 30, -- The amount of requests that can be throttled per request type at once before the request will error.
 

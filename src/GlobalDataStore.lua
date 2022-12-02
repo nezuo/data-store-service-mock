@@ -1,5 +1,5 @@
-local Constants = require(script.Constants)
-local validateString = require(script.validateString)
+local Constants = require(script.Parent.Constants)
+local validateString = require(script.Parent.validateString)
 
 local function copyDeep(value)
 	if typeof(value) ~= "table" then
@@ -18,11 +18,12 @@ end
 local GlobalDataStore = {}
 GlobalDataStore.__index = GlobalDataStore
 
-function GlobalDataStore.new(clock, errors)
+function GlobalDataStore.new(budget, clock, errors)
 	return setmetatable({
 		data = {},
 		getCache = {},
 		writeCooldowns = {},
+		budget = budget,
 		clock = clock,
 		errors = errors,
 	}, GlobalDataStore)

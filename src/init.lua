@@ -38,16 +38,18 @@ function DataStoreServiceMock.manual()
 
 	self.clock = clock
 
-	function self:tick(seconds)
-		now += seconds
-		self.budget:tick(seconds)
+	function self:setClock(seconds)
+		now = seconds
 	end
 
-	return DataStoreServiceMock
+	return self
 end
 
 function DataStoreServiceMock:GetDataStore(name, scope)
 	assertServer()
+
+	scope = scope or "global"
+
 	validateString("name", name, Constants.MAX_NAME_LENGTH)
 	validateString("scope", scope, Constants.MAX_SCOPE_LENGTH)
 
@@ -56,7 +58,7 @@ function DataStoreServiceMock:GetDataStore(name, scope)
 	end
 
 	if self.dataStores[name][scope] == nil then
-		self.dataStores[name][scope] = GlobalDataStore.new(self.clock, self.errors)
+		self.dataStores[name][scope] = GlobalDataStore.new(self.budget, self.clock, self.errors)
 	end
 
 	return self.dataStores[name][scope]
