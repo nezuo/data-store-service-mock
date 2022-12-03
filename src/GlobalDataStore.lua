@@ -31,6 +31,16 @@ function GlobalDataStore.new(budget, clock, errors)
 	}, GlobalDataStore)
 end
 
+function GlobalDataStore:write(key, data)
+	self.data[key] = copyDeep(data)
+
+	if self.keyInfos[key] == nil then
+		self.keyInfos[key] = DataStoreKeyInfo.new(self.clock(), self.clock())
+	else
+		self.keyInfos[key].UpdatedTime = self.clock()
+	end
+end
+
 function GlobalDataStore:UpdateAsync(key, transform)
 	validateString("key", key, Constants.MAX_KEY_LENGTH)
 
@@ -67,13 +77,7 @@ function GlobalDataStore:UpdateAsync(key, transform)
 
 	-- TODO: Make sure transformed data is savable.
 
-	self.data[key] = copyDeep(transformed)
-
-	if self.keyInfos[key] == nil then
-		self.keyInfos[key] = DataStoreKeyInfo.new(self.clock(), self.clock())
-	else
-		self.keyInfos[key].UpdatedTime = self.clock()
-	end
+	self:write(key, transformed)
 
 	self.getCache[key] = self.clock() + Constants.GET_CACHE_DURATION
 	self.writeCooldowns[key] = self.clock() + Constants.WRITE_COOLDOWN
