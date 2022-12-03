@@ -150,7 +150,7 @@ function Budget:yieldForBudget(requestTypes)
 	if self:hasBudget(requestTypes) then
 		self:consumeBudget(requestTypes)
 	elseif #self.queues[mainRequestType] >= self.maxThrottleQueueSize then
-		error("Request was throttled but the throttle queue was full")
+		error("Request was throttled due to lack of budget but the throttle queue was full")
 	else
 		warn("Request was throttled due to lack of budget")
 
@@ -167,7 +167,7 @@ function Budget:yieldForBudgetAndWriteCooldown(key, writeCooldowns, requestTypes
 	local mainRequestType = requestTypes[1]
 
 	if #self.queues[mainRequestType] >= self.maxThrottleQueueSize then
-		error("Request was throttled but the throttle queue was full")
+		error("Request was throttled due to the write cooldown but the throttle queue was full")
 	else
 		warn("Request was throttled due to the write cooldown")
 

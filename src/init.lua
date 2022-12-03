@@ -18,6 +18,7 @@ DataStoreServiceMock.__index = DataStoreServiceMock
 function DataStoreServiceMock.new()
 	return setmetatable({
 		dataStores = {},
+		errors = SimulatedErrors.new(),
 		budget = Budget.new(os.clock),
 		clock = os.clock,
 	}, DataStoreServiceMock)
