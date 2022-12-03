@@ -1,4 +1,5 @@
 local Constants = require(script.Parent.Constants)
+local DataStoreKeyInfo = require(script.Parent.DataStoreKeyInfo)
 local validateString = require(script.Parent.validateString)
 
 local function copyDeep(value)
@@ -21,6 +22,7 @@ GlobalDataStore.__index = GlobalDataStore
 function GlobalDataStore.new(budget, clock, errors)
 	return setmetatable({
 		data = {},
+		keyInfos = {},
 		getCache = {},
 		writeCooldowns = {},
 		budget = budget,
@@ -57,7 +59,7 @@ function GlobalDataStore:UpdateAsync(key, transform)
 	end
 
 	local oldValue = self.data[key]
-	local transformed = transform(copyDeep(oldValue))
+	local transformed = transform(copyDeep(oldValue), self.keyInfos[key])
 
 	if transformed == nil then
 		return nil
@@ -66,6 +68,12 @@ function GlobalDataStore:UpdateAsync(key, transform)
 	-- TODO: Make sure transformed data is savable.
 
 	self.data[key] = copyDeep(transformed)
+
+	if self.keyInfos[key] == nil then
+		self.keyInfos[key] = DataStoreKeyInfo.new(self.clock(), self.clock())
+	else
+		self.keyInfos[key].UpdatedTime = self.clock()
+	end
 
 	self.getCache[key] = self.clock() + Constants.GET_CACHE_DURATION
 	self.writeCooldowns[key] = self.clock() + Constants.WRITE_COOLDOWN
