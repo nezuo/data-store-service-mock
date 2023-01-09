@@ -69,7 +69,13 @@ function GlobalDataStore:UpdateAsync(key, transform)
 	end
 
 	local oldValue = self.data[key]
-	local transformed = transform(copyDeep(oldValue), self.keyInfos[key])
+
+	local ok, transformed = pcall(transform, copyDeep(oldValue), self.keyInfos[key])
+
+	if not ok then
+		task.spawn(error, transformed)
+		return nil
+	end
 
 	if transformed == nil then
 		return nil
