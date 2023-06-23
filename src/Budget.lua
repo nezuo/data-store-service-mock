@@ -96,9 +96,7 @@ function Budget:updateQueues()
 		local newQueue = {}
 
 		for _, request in queue do
-			local inWriteCooldown = request.writeCooldown[request.key] ~= nil and self.clock() < request.writeCooldown
-
-			if not inWriteCooldown and self:hasBudget(request.requestTypes) then
+			if self:hasBudget(request.requestTypes) then
 				self:consumeBudget(request.requestTypes)
 				coroutine.resume(request.thread)
 			else
@@ -157,25 +155,6 @@ function Budget:yieldForBudget(requestTypes)
 		table.insert(self.queues[mainRequestType], {
 			thread = coroutine.running(),
 			requestTypes = requestTypes,
-		})
-
-		coroutine.yield()
-	end
-end
-
-function Budget:yieldForBudgetAndWriteCooldown(key, writeCooldowns, requestTypes)
-	local mainRequestType = requestTypes[1]
-
-	if #self.queues[mainRequestType] >= self.maxThrottleQueueSize then
-		error("Request was throttled due to the write cooldown but the throttle queue was full")
-	else
-		warn("Request was throttled due to the write cooldown")
-
-		table.insert(self.queues[mainRequestType], {
-			thread = coroutine.running(),
-			requestTypes = requestTypes,
-			key = key,
-			writeCooldowns = writeCooldowns,
 		})
 
 		coroutine.yield()

@@ -24,7 +24,6 @@ function GlobalDataStore.new(budget, clock, errors)
 		data = {},
 		keyInfos = {},
 		getCache = {},
-		writeCooldowns = {},
 		budget = budget,
 		clock = clock,
 		errors = errors,
@@ -52,21 +51,13 @@ function GlobalDataStore:UpdateAsync(key, transform)
 		self.errors:simulateError("UpdateAsync")
 	end
 
-	if self.writeCooldowns[key] ~= nil and self.clock() < self.writeCooldowns[key] then
-		self.budget:yieldForBudgetAndWriteCooldown(
-			key,
-			self.writeCooldowns,
-			{ Enum.DataStoreRequestType.SetIncrementAsync }
-		)
-	else
-		local usingGetCache = self.getCache[key] ~= nil and self.clock() < self.getCache[key]
+	local usingGetCache = self.getCache[key] ~= nil and self.clock() < self.getCache[key]
 
-		local requestsTypes = if usingGetCache
-			then { Enum.DataStoreRequestType.SetIncrementAsync }
-			else { Enum.DataStoreRequestType.GetAsync, Enum.DataStoreRequestType.SetIncrementAsync }
+	local requestsTypes = if usingGetCache
+		then { Enum.DataStoreRequestType.SetIncrementAsync }
+		else { Enum.DataStoreRequestType.GetAsync, Enum.DataStoreRequestType.SetIncrementAsync }
 
-		self.budget:yieldForBudget(requestsTypes)
-	end
+	self.budget:yieldForBudget(requestsTypes)
 
 	local oldValue = self.data[key]
 
@@ -86,7 +77,6 @@ function GlobalDataStore:UpdateAsync(key, transform)
 	self:write(key, transformed)
 
 	self.getCache[key] = self.clock() + Constants.GET_CACHE_DURATION
-	self.writeCooldowns[key] = self.clock() + Constants.WRITE_COOLDOWN
 
 	return copyDeep(transformed)
 end
