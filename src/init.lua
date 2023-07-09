@@ -62,7 +62,7 @@ function DataStoreServiceMock:GetDataStore(name, scope)
 	end
 
 	if self.dataStores[name][scope] == nil then
-		self.dataStores[name][scope] = GlobalDataStore.new(self.budget, self.clock, self.errors)
+		self.dataStores[name][scope] = GlobalDataStore.new(self.budget, self.clock, self.errors, self.yield)
 	end
 
 	return self.dataStores[name][scope]

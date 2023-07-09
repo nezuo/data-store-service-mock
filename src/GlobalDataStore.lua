@@ -19,7 +19,7 @@ end
 local GlobalDataStore = {}
 GlobalDataStore.__index = GlobalDataStore
 
-function GlobalDataStore.new(budget, clock, errors)
+function GlobalDataStore.new(budget, clock, errors, yield)
 	return setmetatable({
 		data = {},
 		keyInfos = {},
@@ -27,6 +27,7 @@ function GlobalDataStore.new(budget, clock, errors)
 		budget = budget,
 		clock = clock,
 		errors = errors,
+		yield = yield,
 	}, GlobalDataStore)
 end
 
