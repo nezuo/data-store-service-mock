@@ -20,7 +20,7 @@ function DataStoreServiceMock.new()
 	return setmetatable({
 		dataStores = {},
 		errors = SimulatedErrors.new(),
-		yield = SimulatedYield,
+		yield = SimulatedYield.new(),
 		budget = Budget.new(os.clock),
 		clock = os.clock,
 	}, DataStoreServiceMock)
@@ -36,7 +36,7 @@ function DataStoreServiceMock.manual()
 	local self = setmetatable({
 		dataStores = {},
 		errors = SimulatedErrors.new(),
-		yield = SimulatedYield,
+		yield = SimulatedYield.new(),
 		budget = Budget.manual(clock),
 	}, DataStoreServiceMock)
 
