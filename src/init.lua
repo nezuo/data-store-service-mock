@@ -4,6 +4,7 @@ local Budget = require(script.Budget)
 local Constants = require(script.Constants)
 local GlobalDataStore = require(script.GlobalDataStore)
 local SimulatedErrors = require(script.SimulatedErrors)
+local SimulatedYield = require(script.SimulatedYield)
 local validateString = require(script.validateString)
 
 local function assertServer()
@@ -19,6 +20,7 @@ function DataStoreServiceMock.new()
 	return setmetatable({
 		dataStores = {},
 		errors = SimulatedErrors.new(),
+		yield = SimulatedYield,
 		budget = Budget.new(os.clock),
 		clock = os.clock,
 	}, DataStoreServiceMock)
@@ -34,6 +36,7 @@ function DataStoreServiceMock.manual()
 	local self = setmetatable({
 		dataStores = {},
 		errors = SimulatedErrors.new(),
+		yield = SimulatedYield,
 		budget = Budget.manual(clock),
 	}, DataStoreServiceMock)
 

@@ -74,6 +74,8 @@ function GlobalDataStore:UpdateAsync(key, transform)
 
 	-- TODO: Make sure transformed data is savable.
 
+	self.yield:yield()
+
 	self:write(key, transformed)
 
 	self.getCache[key] = self.clock() + Constants.GET_CACHE_DURATION
