@@ -33,10 +33,12 @@ end
 function GlobalDataStore:write(key, data)
 	self.data[key] = copyDeep(data)
 
+	local now = DateTime.now().UnixTimestampMillis
+
 	if self.keyInfos[key] == nil then
-		self.keyInfos[key] = DataStoreKeyInfo.new(os.clock(), os.clock())
+		self.keyInfos[key] = DataStoreKeyInfo.new(now, now)
 	else
-		self.keyInfos[key].UpdatedTime = os.clock()
+		self.keyInfos[key].UpdatedTime = now
 	end
 end
 

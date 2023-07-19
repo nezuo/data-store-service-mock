@@ -1,6 +1,6 @@
 [package]
 name = "nezuo/data-store-service-mock"
-version = "0.2.9"
+version = "0.3.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "server"
 
