@@ -21,32 +21,17 @@ function DataStoreServiceMock.new()
 		dataStores = {},
 		errors = SimulatedErrors.new(),
 		yield = SimulatedYield.new(),
-		budget = Budget.new(os.clock),
-		clock = os.clock,
+		budget = Budget.new(),
 	}, DataStoreServiceMock)
 end
 
 function DataStoreServiceMock.manual()
-	local now = 0
-
-	local function clock()
-		return now
-	end
-
-	local self = setmetatable({
+	return setmetatable({
 		dataStores = {},
 		errors = SimulatedErrors.new(),
 		yield = SimulatedYield.new(),
-		budget = Budget.manual(clock),
+		budget = Budget.manual(),
 	}, DataStoreServiceMock)
-
-	self.clock = clock
-
-	function self:setClock(seconds)
-		now = seconds
-	end
-
-	return self
 end
 
 function DataStoreServiceMock:GetDataStore(name, scope)
@@ -62,7 +47,7 @@ function DataStoreServiceMock:GetDataStore(name, scope)
 	end
 
 	if self.dataStores[name][scope] == nil then
-		self.dataStores[name][scope] = GlobalDataStore.new(self.budget, self.clock, self.errors, self.yield)
+		self.dataStores[name][scope] = GlobalDataStore.new(self.budget, self.errors, self.yield)
 	end
 
 	return self.dataStores[name][scope]

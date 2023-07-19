@@ -19,13 +19,12 @@ end
 local GlobalDataStore = {}
 GlobalDataStore.__index = GlobalDataStore
 
-function GlobalDataStore.new(budget, clock, errors, yield)
+function GlobalDataStore.new(budget, errors, yield)
 	return setmetatable({
 		data = {},
 		keyInfos = {},
 		getCache = {},
 		budget = budget,
-		clock = clock,
 		errors = errors,
 		yield = yield,
 	}, GlobalDataStore)
@@ -35,9 +34,9 @@ function GlobalDataStore:write(key, data)
 	self.data[key] = copyDeep(data)
 
 	if self.keyInfos[key] == nil then
-		self.keyInfos[key] = DataStoreKeyInfo.new(self.clock(), self.clock())
+		self.keyInfos[key] = DataStoreKeyInfo.new(os.clock(), os.clock())
 	else
-		self.keyInfos[key].UpdatedTime = self.clock()
+		self.keyInfos[key].UpdatedTime = os.clock()
 	end
 end
 
@@ -52,7 +51,7 @@ function GlobalDataStore:UpdateAsync(key, transform)
 		self.errors:simulateError("UpdateAsync")
 	end
 
-	local usingGetCache = self.getCache[key] ~= nil and self.clock() < self.getCache[key]
+	local usingGetCache = self.getCache[key] ~= nil and os.clock() < self.getCache[key]
 
 	local requestsTypes = if usingGetCache
 		then { Enum.DataStoreRequestType.SetIncrementAsync }
@@ -79,7 +78,7 @@ function GlobalDataStore:UpdateAsync(key, transform)
 
 	self:write(key, transformed)
 
-	self.getCache[key] = self.clock() + Constants.GET_CACHE_DURATION
+	self.getCache[key] = os.clock() + Constants.GET_CACHE_DURATION
 
 	return copyDeep(transformed)
 end

@@ -3,7 +3,7 @@ local RunService = game:GetService("RunService")
 
 local Constants = require(script.Parent.Constants)
 
-local function defaultBudget(clock)
+local function defaultBudget()
 	local budgets = {}
 	local queues = {}
 
@@ -20,15 +20,14 @@ local function defaultBudget(clock)
 		budgets = budgets,
 		queues = queues,
 		maxThrottleQueueSize = Constants.MAX_THROTTLE_QUEUE_SIZE,
-		clock = clock,
 	}
 end
 
 local Budget = {}
 Budget.__index = Budget
 
-function Budget.new(clock)
-	local self = setmetatable(defaultBudget(clock), Budget)
+function Budget.new()
+	local self = setmetatable(defaultBudget(), Budget)
 
 	self.manual = false
 
@@ -39,11 +38,10 @@ function Budget.new(clock)
 	return self
 end
 
-function Budget.manual(clock)
-	local self = setmetatable(defaultBudget(clock), Budget)
+function Budget.manual()
+	local self = setmetatable(defaultBudget(), Budget)
 
 	self.manual = true
-	self.updateCount = 0
 
 	return self
 end
@@ -116,29 +114,9 @@ end
 function Budget:tick(deltaSeconds)
 	self.accumulatedSeconds += deltaSeconds
 
-	local tasks = {}
-
 	while self.accumulatedSeconds >= Constants.BUDGET_UPDATE_INTERVAL do
-		if self.manual then
-			self.updateCount += 1
-
-			table.insert(tasks, {
-				resumeAt = self.updateCount * Constants.BUDGET_UPDATE_INTERVAL,
-				resume = function()
-					self:update()
-				end,
-			})
-		else
-			self:update()
-		end
-
+		self:update()
 		self.accumulatedSeconds -= Constants.BUDGET_UPDATE_INTERVAL
-	end
-
-	if self.manual then
-		return tasks
-	else
-		return nil
 	end
 end
 
