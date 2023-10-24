@@ -31,8 +31,6 @@ function GlobalDataStore.new(budget, errors, yield)
 end
 
 function GlobalDataStore:write(key, data, userIds, metadata)
-	self.data[key] = copyDeep(data)
-
 	local now = DateTime.now().UnixTimestampMillis
 
 	local keyInfo = self.keyInfos[key]
@@ -44,6 +42,9 @@ function GlobalDataStore:write(key, data, userIds, metadata)
 	else
 		self.keyInfos[key] = DataStoreKeyInfo.new(now, now, "0", userIds, metadata)
 	end
+
+	-- Data is written after key info because DataStoreKeyInfo.new can throw an error.
+	self.data[key] = copyDeep(data)
 end
 
 function GlobalDataStore:UpdateAsync(key, transform)
