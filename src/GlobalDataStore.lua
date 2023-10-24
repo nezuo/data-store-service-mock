@@ -30,15 +30,19 @@ function GlobalDataStore.new(budget, errors, yield)
 	}, GlobalDataStore)
 end
 
-function GlobalDataStore:write(key, data)
+function GlobalDataStore:write(key, data, userIds, metadata)
 	self.data[key] = copyDeep(data)
 
 	local now = DateTime.now().UnixTimestampMillis
 
-	if self.keyInfos[key] == nil then
-		self.keyInfos[key] = DataStoreKeyInfo.new(now, now)
+	local keyInfo = self.keyInfos[key]
+
+	if keyInfo ~= nil then
+		local version = tostring(tonumber(keyInfo.Version) + 1)
+
+		self.keyInfos[key] = DataStoreKeyInfo.new(keyInfo.CreatedTime, now, version, userIds, metadata)
 	else
-		self.keyInfos[key].UpdatedTime = now
+		self.keyInfos[key] = DataStoreKeyInfo.new(now, now, "0", userIds, metadata)
 	end
 end
 
@@ -63,7 +67,7 @@ function GlobalDataStore:UpdateAsync(key, transform)
 
 	local oldValue = self.data[key]
 
-	local ok, transformed = pcall(transform, copyDeep(oldValue), self.keyInfos[key])
+	local ok, transformed, userIds, metadata = pcall(transform, copyDeep(oldValue), self.keyInfos[key])
 
 	if not ok then
 		task.spawn(error, transformed)
@@ -78,11 +82,11 @@ function GlobalDataStore:UpdateAsync(key, transform)
 
 	self.yield:yield()
 
-	self:write(key, transformed)
+	self:write(key, transformed, userIds, metadata)
 
 	self.getCache[key] = os.clock() + Constants.GET_CACHE_DURATION
 
-	return copyDeep(transformed)
+	return copyDeep(transformed), self.keyInfos[key]
 end
 
 return GlobalDataStore
