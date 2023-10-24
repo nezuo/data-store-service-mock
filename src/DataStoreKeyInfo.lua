@@ -31,11 +31,11 @@ function DataStoreKeyInfo.new(createdTime, updatedTime, version, userIds, metada
 end
 
 function DataStoreKeyInfo:GetUserIds()
-	return self.userIds
+	return table.clone(self.userIds)
 end
 
 function DataStoreKeyInfo:GetMetadata()
-	return self.metadata
+	return table.clone(self.metadata)
 end
 
 return DataStoreKeyInfo
