@@ -47,7 +47,30 @@ function GlobalDataStore:write(key, data, userIds, metadata)
 	self.data[key] = copyDeep(data)
 end
 
-function GlobalDataStore:UpdateAsync(key, transform)
+function GlobalDataStore:GetAsync(key: string, options: DataStoreGetOptions?)
+	validateString("key", key, Constants.MAX_KEY_LENGTH)
+
+	if (options == nil or options.UseCache) and self.getCache[key] ~= nil and os.clock() < self.getCache[key] then
+		return copyDeep(self.data[key])
+	end
+
+	if self.errors ~= nil then
+		self.errors:simulateError("GetAsync")
+	end
+
+	self.budget:yieldForBudget({ Enum.DataStoreRequestType.GetAsync })
+
+	self.getCache[key] = os.clock() + Constants.GET_CACHE_DURATION
+
+	local data = copyDeep(self.data[key])
+	local keyInfo = self.keyInfos[key]
+
+	self.yield:yield()
+
+	return data, keyInfo
+end
+
+function GlobalDataStore:UpdateAsync(key: string, transform)
 	validateString("key", key, Constants.MAX_KEY_LENGTH)
 
 	if typeof(transform) ~= "function" then

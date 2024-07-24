@@ -7,7 +7,7 @@ return {
 
 	BUDGET_UPDATE_INTERVAL = 1,
 
-	GET_CACHE_DURATION = 5,
+	GET_CACHE_DURATION = 4,
 
 	REQUEST_BUDGETS = {
 		[Enum.DataStoreRequestType.GetAsync] = {
