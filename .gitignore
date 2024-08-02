@@ -1,1 +1,4 @@
 /sourcemap.json
+/node_modules
+/default.project.json
+/out
