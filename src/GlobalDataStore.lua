@@ -113,4 +113,25 @@ function GlobalDataStore:UpdateAsync(key: string, transform)
 	return copyDeep(transformed), self.keyInfos[key]
 end
 
+function GlobalDataStore:RemoveAsync(key: string)
+	validateString("key", key, Constants.MAX_KEY_LENGTH)
+
+	if self.errors ~= nil then
+		self.errors:simulateError("RemoveAsync")
+	end
+
+	self.budget:yieldForBudget({ Enum.DataStoreRequestType.SetIncrementAsync })
+	self.yield:yield()
+
+	local oldValue = self.data[key]
+	if oldValue == nil then
+		return nil, nil
+	end
+	local keyInfo = self.keyInfos[key]
+
+	self:write(key, nil)
+
+	return copyDeep(oldValue), keyInfo
+end
+
 return GlobalDataStore
