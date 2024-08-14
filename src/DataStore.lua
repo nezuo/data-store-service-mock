@@ -61,7 +61,14 @@ function DataStore:GetAsync(key: string, options: DataStoreGetOptions?)
 	validateString("key", key, Constants.MAX_KEY_LENGTH)
 
 	if (options == nil or options.UseCache) and self.getCache[key] ~= nil and os.clock() < self.getCache[key] then
-		return copyDeep(self.data[key])
+		local data = self.data[key]
+		local keyInfo = self.keyInfos[key]
+
+		if data == nil then
+			return nil, nil
+		end
+
+		return copyDeep(data), copyDataStoreKeyInfo(keyInfo)
 	end
 
 	if self.errors ~= nil then
