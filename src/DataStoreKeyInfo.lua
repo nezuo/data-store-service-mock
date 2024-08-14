@@ -22,8 +22,8 @@ function DataStoreKeyInfo.new(createdTime, updatedTime, version, userIds, metada
 	end
 
 	return setmetatable({
-		CreatedTime = createdTime * 1000,
-		UpdatedTime = updatedTime * 1000,
+		CreatedTime = createdTime,
+		UpdatedTime = updatedTime,
 		Version = version,
 		userIds = if userIds ~= nil then table.clone(userIds) else {},
 		metadata = if metadata ~= nil then table.clone(metadata) else {},
