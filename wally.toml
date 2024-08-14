@@ -1,7 +1,9 @@
 [package]
 name = "nezuo/data-store-service-mock"
-version = "0.3.6"
+version = "0.3.7"
 registry = "https://github.com/UpliftGames/wally-index"
-realm = "server"
+exclude = ["**"]
+include = ["src", "src/*", "default.project.json", "wally.toml", "LICENSE"]
+realm = "shared"
 
 [dependencies]
