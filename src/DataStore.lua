@@ -16,6 +16,16 @@ local function copyDeep(value)
 	return copy
 end
 
+local function copyDataStoreKeyInfo(keyInfo)
+	return DataStoreKeyInfo.new(
+		keyInfo.CreatedTime,
+		keyInfo.UpdatedTime,
+		keyInfo.Version,
+		keyInfo.userIds,
+		keyInfo.metadata
+	)
+end
+
 local DataStore = {}
 DataStore.__index = DataStore
 
@@ -71,7 +81,7 @@ function DataStore:GetAsync(key: string, options: DataStoreGetOptions?)
 		return nil, nil
 	end
 
-	return copyDeep(data), keyInfo
+	return copyDeep(data), copyDataStoreKeyInfo(keyInfo)
 end
 
 function DataStore:UpdateAsync(key: string, transform)
@@ -95,7 +105,7 @@ function DataStore:UpdateAsync(key: string, transform)
 	self.yield:yield()
 
 	local oldValue = copyDeep(self.data[key])
-	local oldKeyInfo = if oldValue ~= nil then self.keyInfos[key] else nil
+	local oldKeyInfo = if oldValue ~= nil then copyDataStoreKeyInfo(self.keyInfos[key]) else nil
 
 	local ok, transformed, userIds, metadata = pcall(transform, oldValue, oldKeyInfo)
 
@@ -114,7 +124,7 @@ function DataStore:UpdateAsync(key: string, transform)
 
 	self.getCache[key] = os.clock() + Constants.GET_CACHE_DURATION
 
-	return copyDeep(transformed), self.keyInfos[key]
+	return copyDeep(transformed), copyDataStoreKeyInfo(self.keyInfos[key])
 end
 
 function DataStore:RemoveAsync(key: string)
@@ -136,7 +146,7 @@ function DataStore:RemoveAsync(key: string)
 
 	self:write(key)
 
-	return copyDeep(oldValue), keyInfo
+	return copyDeep(oldValue), copyDataStoreKeyInfo(keyInfo)
 end
 
 return DataStore
