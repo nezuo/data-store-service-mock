@@ -16,10 +16,10 @@ local function copyDeep(value)
 	return copy
 end
 
-local GlobalDataStore = {}
-GlobalDataStore.__index = GlobalDataStore
+local DataStore = {}
+DataStore.__index = DataStore
 
-function GlobalDataStore.new(budget, errors, yield)
+function DataStore.new(budget, errors, yield)
 	return setmetatable({
 		data = {},
 		keyInfos = {},
@@ -27,10 +27,10 @@ function GlobalDataStore.new(budget, errors, yield)
 		budget = budget,
 		errors = errors,
 		yield = yield,
-	}, GlobalDataStore)
+	}, DataStore)
 end
 
-function GlobalDataStore:write(key, data, userIds, metadata)
+function DataStore:write(key, data, userIds, metadata)
 	local now = DateTime.now().UnixTimestampMillis
 
 	local keyInfo = self.keyInfos[key]
@@ -47,7 +47,7 @@ function GlobalDataStore:write(key, data, userIds, metadata)
 	self.data[key] = copyDeep(data)
 end
 
-function GlobalDataStore:GetAsync(key: string, options: DataStoreGetOptions?)
+function DataStore:GetAsync(key: string, options: DataStoreGetOptions?)
 	validateString("key", key, Constants.MAX_KEY_LENGTH)
 
 	if (options == nil or options.UseCache) and self.getCache[key] ~= nil and os.clock() < self.getCache[key] then
@@ -74,7 +74,7 @@ function GlobalDataStore:GetAsync(key: string, options: DataStoreGetOptions?)
 	return copyDeep(data), keyInfo
 end
 
-function GlobalDataStore:UpdateAsync(key: string, transform)
+function DataStore:UpdateAsync(key: string, transform)
 	validateString("key", key, Constants.MAX_KEY_LENGTH)
 
 	if typeof(transform) ~= "function" then
@@ -117,7 +117,7 @@ function GlobalDataStore:UpdateAsync(key: string, transform)
 	return copyDeep(transformed), self.keyInfos[key]
 end
 
-function GlobalDataStore:RemoveAsync(key: string)
+function DataStore:RemoveAsync(key: string)
 	validateString("key", key, Constants.MAX_KEY_LENGTH)
 
 	if self.errors ~= nil then
@@ -139,4 +139,4 @@ function GlobalDataStore:RemoveAsync(key: string)
 	return copyDeep(oldValue), keyInfo
 end
 
-return GlobalDataStore
+return DataStore

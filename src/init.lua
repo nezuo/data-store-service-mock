@@ -2,7 +2,7 @@ local RunService = game:GetService("RunService")
 
 local Budget = require(script.Budget)
 local Constants = require(script.Constants)
-local GlobalDataStore = require(script.GlobalDataStore)
+local DataStore = require(script.DataStore)
 local SimulatedErrors = require(script.SimulatedErrors)
 local SimulatedYield = require(script.SimulatedYield)
 local validateString = require(script.validateString)
@@ -47,7 +47,7 @@ function DataStoreServiceMock:GetDataStore(name, scope)
 	end
 
 	if self.dataStores[name][scope] == nil then
-		self.dataStores[name][scope] = GlobalDataStore.new(self.budget, self.errors, self.yield)
+		self.dataStores[name][scope] = DataStore.new(self.budget, self.errors, self.yield)
 	end
 
 	return self.dataStores[name][scope]
