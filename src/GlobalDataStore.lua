@@ -62,13 +62,14 @@ function GlobalDataStore:GetAsync(key: string, options: DataStoreGetOptions?)
 
 	self.getCache[key] = os.clock() + Constants.GET_CACHE_DURATION
 
+	self.yield:yield()
+
 	local data = self.data[key]
+	local keyInfo = self.keyInfos[key]
+
 	if data == nil then
 		return nil, nil
 	end
-
-	local keyInfo = self.keyInfos[key]
-	self.yield:yield()
 
 	return copyDeep(data), keyInfo
 end
@@ -91,13 +92,12 @@ function GlobalDataStore:UpdateAsync(key: string, transform)
 		else { Enum.DataStoreRequestType.GetAsync, Enum.DataStoreRequestType.SetIncrementAsync }
 
 	self.budget:yieldForBudget(requestsTypes)
+	self.yield:yield()
 
-	local oldValue = self.data[key]
+	local oldValue = copyDeep(self.data[key])
+	local oldKeyInfo = if oldValue ~= nil then self.keyInfos[key] else nil
 
-	local toTransformerData = if oldValue ~= nil then copyDeep(oldValue) else nil
-	local toTransformerKeyInfo = if oldValue == nil then nil else self.keyInfos[key]
-
-	local ok, transformed, userIds, metadata = pcall(transform, toTransformerData, toTransformerKeyInfo)
+	local ok, transformed, userIds, metadata = pcall(transform, oldValue, oldKeyInfo)
 
 	if not ok then
 		task.spawn(error, transformed)
@@ -109,8 +109,6 @@ function GlobalDataStore:UpdateAsync(key: string, transform)
 	end
 
 	-- TODO: Make sure transformed data is savable.
-
-	self.yield:yield()
 
 	self:write(key, transformed, userIds, metadata)
 
@@ -127,17 +125,16 @@ function GlobalDataStore:RemoveAsync(key: string)
 	end
 
 	self.budget:yieldForBudget({ Enum.DataStoreRequestType.SetIncrementAsync })
+	self.yield:yield()
 
 	local oldValue = self.data[key]
+	local keyInfo = self.keyInfos[key]
 
 	if oldValue == nil then
 		return nil, nil
 	end
 
-	self.yield:yield()
-	local keyInfo = self.keyInfos[key]
-
-	self:write(key, nil, nil, nil)
+	self:write(key)
 
 	return copyDeep(oldValue), keyInfo
 end
