@@ -62,12 +62,15 @@ function GlobalDataStore:GetAsync(key: string, options: DataStoreGetOptions?)
 
 	self.getCache[key] = os.clock() + Constants.GET_CACHE_DURATION
 
-	local data = copyDeep(self.data[key])
-	local keyInfo = self.keyInfos[key]
+	local data = self.data[key]
+	if data == nil then
+		return nil, nil
+	end
 
+	local keyInfo = self.keyInfos[key]
 	self.yield:yield()
 
-	return data, keyInfo
+	return copyDeep(data), keyInfo
 end
 
 function GlobalDataStore:UpdateAsync(key: string, transform)
@@ -91,7 +94,10 @@ function GlobalDataStore:UpdateAsync(key: string, transform)
 
 	local oldValue = self.data[key]
 
-	local ok, transformed, userIds, metadata = pcall(transform, copyDeep(oldValue), self.keyInfos[key])
+	local toTransformerData = if oldValue ~= nil then copyDeep(oldValue) else nil
+	local toTransformerKeyInfo = if oldValue == nil then nil else self.keyInfos[key]
+
+	local ok, transformed, userIds, metadata = pcall(transform, toTransformerData, toTransformerKeyInfo)
 
 	if not ok then
 		task.spawn(error, transformed)
