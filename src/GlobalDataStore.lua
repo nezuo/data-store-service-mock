@@ -127,15 +127,17 @@ function GlobalDataStore:RemoveAsync(key: string)
 	end
 
 	self.budget:yieldForBudget({ Enum.DataStoreRequestType.SetIncrementAsync })
-	self.yield:yield()
 
 	local oldValue = self.data[key]
+
 	if oldValue == nil then
 		return nil, nil
 	end
+
+	self.yield:yield()
 	local keyInfo = self.keyInfos[key]
 
-	self:write(key, nil)
+	self:write(key, nil, nil, nil)
 
 	return copyDeep(oldValue), keyInfo
 end
