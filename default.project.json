@@ -1,5 +1,5 @@
 {
-    "name": "data-store-service-mock",
+    "name": "DataStoreServiceMock",
     "tree": {
         "$path": "src"
     }
