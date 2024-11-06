@@ -18,7 +18,15 @@ end
 local DataStoreServiceMock = {}
 DataStoreServiceMock.__index = DataStoreServiceMock
 
-export type DataStoreServiceMock = typeof(setmetatable({} :: {}, DataStoreServiceMock))
+export type DataStoreServiceMock = typeof(setmetatable(
+	{} :: {
+		dataStores: { [string]: { [string]: DataStore.DataStore<any> } },
+		errors: SimulatedErrors.SimulatedErrors,
+		yield: SimulatedYield.SimulatedYield,
+		budget: Budget.Budget,
+	},
+	DataStoreServiceMock
+))
 
 function DataStoreServiceMock.new(): DataStoreServiceMock
 	return setmetatable({
@@ -36,29 +44,35 @@ function DataStoreServiceMock.manual(): DataStoreServiceMock
 		yield = SimulatedYield.new(),
 		budget = Budget.manual(),
 	}, DataStoreServiceMock)
-
 end
 
-function DataStoreServiceMock:GetDataStore(name, scope)
+function DataStoreServiceMock.GetDataStore<T>(
+	self: DataStoreServiceMock,
+	name: string,
+	scope: string?
+): DataStore.DataStore<T>
 	assertServer()
 
 	scope = scope or "global"
 
 	validateString("name", name, Constants.MAX_NAME_LENGTH)
-	validateString("scope", scope, Constants.MAX_SCOPE_LENGTH)
+	validateString("scope", scope :: string, Constants.MAX_SCOPE_LENGTH)
 
-	if self.dataStores[name] == nil then
+	if self.dataStores[name] :: any == nil then
 		self.dataStores[name] = {}
 	end
 
-	if self.dataStores[name][scope] == nil then
-		self.dataStores[name][scope] = DataStore.new(self.budget, self.errors, self.yield)
+	if self.dataStores[name][scope :: string] :: any == nil then
+		self.dataStores[name][scope :: string] = DataStore.new(self.budget, self.errors, self.yield)
 	end
 
-	return self.dataStores[name][scope]
+	return self.dataStores[name][scope :: string]
 end
 
-function DataStoreServiceMock:GetRequestBudgetForRequestType(requestType)
+function DataStoreServiceMock.GetRequestBudgetForRequestType(
+	self: DataStoreServiceMock,
+	requestType: Enum.DataStoreRequestType
+): number
 	local budget = self.budget.budgets[requestType]
 
 	if budget == nil then

@@ -1,7 +1,10 @@
 --!strict
 
+local Budget = require(script.Parent.Budget)
 local Constants = require(script.Parent.Constants)
 local DataStoreKeyInfo = require(script.Parent.DataStoreKeyInfo)
+local SimulatedErrors = require(script.Parent.SimulatedErrors)
+local SimulatedYield = require(script.Parent.SimulatedYield)
 local validateString = require(script.Parent.validateString)
 
 type Table = { [any]: any }
@@ -45,14 +48,14 @@ export type DataStore<T> = typeof(setmetatable(
 		data: T,
 		keyInfos: { [string]: KeyInfo },
 		getCache: {},
-		budget: number,
-		errors: number,
-		yield: number,
+		budget: Budget.Budget,
+		errors: SimulatedErrors.SimulatedErrors,
+		yield: SimulatedYield.SimulatedYield,
 	},
 	DataStore
 ))
 
-function DataStore.new<T>(budget: number, errors: number, yield: number): DataStore<T>
+function DataStore.new<T>(budget: Budget.Budget, errors: SimulatedErrors.SimulatedErrors, yield: SimulatedYield.SimulatedYield): DataStore<T>
 	return setmetatable({
 		data = {},
 		keyInfos = {},
