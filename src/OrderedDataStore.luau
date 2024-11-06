@@ -16,6 +16,6 @@ function OrderedDataStore.new(budget, errors, yield)
 	}, OrderedDataStore)
 end
 
-function OrderedDataStore:UpdateAsync() end
+function OrderedDataStore:GetSortedAsync(ascending: boolean, pageSize: number, minValue: number?, maxValue: number?) end
 
 return OrderedDataStore
