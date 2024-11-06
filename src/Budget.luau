@@ -1,3 +1,5 @@
+--!strict
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -26,8 +28,25 @@ end
 local Budget = {}
 Budget.__index = Budget
 
+export type RequestTypes = { Enum.DataStoreRequestType }
+export type Request = {
+	requestTypes: RequestTypes,
+	thread: thread,
+}
+
+export type Budget = typeof(setmetatable(
+	defaultBudget() :: {
+		accumulatedSeconds: number,
+		budgets: { [Enum.DataStoreRequestType]: number },
+		queues: { [Enum.DataStoreRequestType]: { Request } },
+		maxThrottleQueueSize: number,
+		manual: boolean,
+	},
+	Budget
+))
+
 function Budget.new()
-	local self = setmetatable(defaultBudget(), Budget)
+	local self = setmetatable(defaultBudget(), Budget) :: Budget
 
 	self.manual = false
 
@@ -39,18 +58,18 @@ function Budget.new()
 end
 
 function Budget.manual()
-	local self = setmetatable(defaultBudget(), Budget)
+	local self = setmetatable(defaultBudget(), Budget) :: Budget
 
 	self.manual = true
 
 	return self
 end
 
-function Budget:setMaxThrottleQueueSize(size)
+function Budget.setMaxThrottleQueueSize(self, size: number)
 	self.maxThrottleQueueSize = size
 end
 
-function Budget:hasBudget(requestTypes)
+function Budget.hasBudget(self, requestTypes: RequestTypes): boolean
 	for _, requestType in requestTypes do
 		if self.budgets[requestType] < 1 then
 			return false
@@ -60,7 +79,7 @@ function Budget:hasBudget(requestTypes)
 	return true
 end
 
-function Budget:consumeBudget(requestTypes)
+function Budget.consumeBudget(self: Budget, requestTypes: RequestTypes)
 	for _, requestType in requestTypes do
 		self.budgets[requestType] = math.max(self.budgets[requestType] - 1, 0)
 	end
@@ -71,7 +90,7 @@ function Budget:consumeBudget(requestTypes)
 	)
 end
 
-function Budget:updateBudgets()
+function Budget.updateBudgets(self: Budget)
 	local playerCount = #Players:GetPlayers()
 
 	for requestType, options in Constants.REQUEST_BUDGETS do
@@ -89,7 +108,7 @@ function Budget:updateBudgets()
 	)
 end
 
-function Budget:updateQueues()
+function Budget.updateQueues(self: Budget)
 	for index, queue in self.queues do
 		local newQueue = {}
 
@@ -106,12 +125,12 @@ function Budget:updateQueues()
 	end
 end
 
-function Budget:update()
+function Budget.update(self: Budget)
 	self:updateBudgets()
 	self:updateQueues()
 end
 
-function Budget:tick(deltaSeconds)
+function Budget.tick(self: Budget, deltaSeconds: number)
 	self.accumulatedSeconds += deltaSeconds
 
 	while self.accumulatedSeconds >= Constants.BUDGET_UPDATE_INTERVAL do
@@ -120,7 +139,7 @@ function Budget:tick(deltaSeconds)
 	end
 end
 
-function Budget:yieldForBudget(requestTypes)
+function Budget.yieldForBudget(self: Budget, requestTypes: RequestTypes)
 	local mainRequestType = requestTypes[1]
 
 	if self:hasBudget(requestTypes) then
