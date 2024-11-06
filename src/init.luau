@@ -1,3 +1,5 @@
+--!strict
+
 local RunService = game:GetService("RunService")
 
 local Budget = require(script.Budget)
@@ -16,7 +18,9 @@ end
 local DataStoreServiceMock = {}
 DataStoreServiceMock.__index = DataStoreServiceMock
 
-function DataStoreServiceMock.new()
+export type DataStoreServiceMock = typeof(setmetatable({} :: {}, DataStoreServiceMock))
+
+function DataStoreServiceMock.new(): DataStoreServiceMock
 	return setmetatable({
 		dataStores = {},
 		errors = SimulatedErrors.new(),
@@ -25,13 +29,14 @@ function DataStoreServiceMock.new()
 	}, DataStoreServiceMock)
 end
 
-function DataStoreServiceMock.manual()
+function DataStoreServiceMock.manual(): DataStoreServiceMock
 	return setmetatable({
 		dataStores = {},
 		errors = SimulatedErrors.new(),
 		yield = SimulatedYield.new(),
 		budget = Budget.manual(),
 	}, DataStoreServiceMock)
+
 end
 
 function DataStoreServiceMock:GetDataStore(name, scope)

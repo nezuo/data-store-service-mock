@@ -1,7 +1,28 @@
+--!strict
+
 local DataStoreKeyInfo = {}
 DataStoreKeyInfo.__index = DataStoreKeyInfo
 
-function DataStoreKeyInfo.new(createdTime, updatedTime, version, userIds, metadata)
+export type UserIds = { number }
+export type Metadata = { [any]: any }
+export type DataStoreKeyInfo = typeof(setmetatable(
+	{} :: {
+		CreatedTime: number,
+		UpdatedTime: number,
+		Version: string,
+		userIds: UserIds,
+		metadata: Metadata,
+	},
+	DataStoreKeyInfo
+))
+
+function DataStoreKeyInfo.new(
+	createdTime: number,
+	updatedTime: number,
+	version: string,
+	userIds: UserIds?,
+	metadata: Metadata
+): DataStoreKeyInfo
 	local userIdsType = typeof(userIds)
 
 	if userIdsType ~= "nil" and userIdsType ~= "table" then
@@ -10,7 +31,7 @@ function DataStoreKeyInfo.new(createdTime, updatedTime, version, userIds, metada
 
 	if userIdsType == "table" then
 		local expectedKey = 1
-		for key, value in userIds do
+		for key, value in userIds :: UserIds do
 			assert(typeof(value) == "number", "userId must be a number")
 
 			if key ~= expectedKey then
@@ -30,11 +51,11 @@ function DataStoreKeyInfo.new(createdTime, updatedTime, version, userIds, metada
 	}, DataStoreKeyInfo)
 end
 
-function DataStoreKeyInfo:GetUserIds()
+function DataStoreKeyInfo.GetUserIds(self: DataStoreKeyInfo): UserIds
 	return table.clone(self.userIds)
 end
 
-function DataStoreKeyInfo:GetMetadata()
+function DataStoreKeyInfo:GetMetadata(): Metadata
 	return table.clone(self.metadata)
 end
 

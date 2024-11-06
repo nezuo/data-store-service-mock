@@ -45,7 +45,7 @@ export type Budget = typeof(setmetatable(
 	Budget
 ))
 
-function Budget.new()
+function Budget.new(): Budget
 	local self = setmetatable(defaultBudget(), Budget) :: Budget
 
 	self.manual = false
@@ -57,7 +57,7 @@ function Budget.new()
 	return self
 end
 
-function Budget.manual()
+function Budget.manual(): Budget
 	local self = setmetatable(defaultBudget(), Budget) :: Budget
 
 	self.manual = true

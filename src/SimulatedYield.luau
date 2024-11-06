@@ -1,14 +1,24 @@
+--!strict
+
 local SimulatedYield = {}
 SimulatedYield.__index = SimulatedYield
 
-function SimulatedYield.new()
+export type SimulatedYield = typeof(setmetatable(
+	{} :: {
+		yielding: boolean,
+		threads: { thread },
+	},
+	SimulatedYield
+))
+
+function SimulatedYield.new(): SimulatedYield
 	return setmetatable({
 		yielding = false,
 		threads = {},
 	}, SimulatedYield)
 end
 
-function SimulatedYield:yield()
+function SimulatedYield.yield(self: SimulatedYield)
 	if not self.yielding then
 		return
 	end
@@ -18,11 +28,11 @@ function SimulatedYield:yield()
 	coroutine.yield()
 end
 
-function SimulatedYield:startYield()
+function SimulatedYield.startYield(self: SimulatedYield)
 	self.yielding = true
 end
 
-function SimulatedYield:stopYield()
+function SimulatedYield.stopYield(self: SimulatedYield)
 	self.yielding = false
 
 	for _, thread in self.threads do
