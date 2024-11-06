@@ -1,0 +1,5 @@
+[tools]
+llsp = "johnnymorganz/luau-lsp@1.34.0"
+rojo = "rojo-rbx/rojo@7.4.4"
+selene = "kampfkarren/selene@0.27.1"
+wally = "upliftgames/wally@0.3.2"
