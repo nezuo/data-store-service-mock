@@ -5,6 +5,7 @@ local RunService = game:GetService("RunService")
 local Budget = require(script.Budget)
 local Constants = require(script.Constants)
 local DataStore = require(script.DataStore)
+local OrderedDataStore = require(script.OrderedDataStore)
 local SimulatedErrors = require(script.SimulatedErrors)
 local SimulatedYield = require(script.SimulatedYield)
 local validateString = require(script.validateString)
@@ -21,6 +22,7 @@ DataStoreServiceMock.__index = DataStoreServiceMock
 export type DataStoreServiceMock = typeof(setmetatable(
 	{} :: {
 		dataStores: { [string]: { [string]: DataStore.DataStore<any> } },
+		orderedDataStores: { [string]: { [string]: OrderedDataStore.OrderedDataStore } },
 		errors: SimulatedErrors.SimulatedErrors,
 		yield: SimulatedYield.SimulatedYield,
 		budget: Budget.Budget,
@@ -31,6 +33,7 @@ export type DataStoreServiceMock = typeof(setmetatable(
 function DataStoreServiceMock.new(): DataStoreServiceMock
 	return setmetatable({
 		dataStores = {},
+		orderedDataStores = {},
 		errors = SimulatedErrors.new(),
 		yield = SimulatedYield.new(),
 		budget = Budget.new(),
@@ -40,10 +43,15 @@ end
 function DataStoreServiceMock.manual(): DataStoreServiceMock
 	return setmetatable({
 		dataStores = {},
+		orderedDataStores = {},
 		errors = SimulatedErrors.new(),
 		yield = SimulatedYield.new(),
 		budget = Budget.manual(),
 	}, DataStoreServiceMock)
+end
+
+function DataStoreServiceMock.GetGlobalDataStore<T>(self: DataStoreServiceMock): DataStore.DataStore<T>
+	return DataStoreServiceMock.GetDataStore(self, "global")
 end
 
 function DataStoreServiceMock.GetDataStore<T>(
@@ -53,12 +61,12 @@ function DataStoreServiceMock.GetDataStore<T>(
 ): DataStore.DataStore<T>
 	assertServer()
 
-	scope = scope or "global"
+	scope = if typeof(scope) ~= "string" then "global" else scope
 
 	validateString("name", name, Constants.MAX_NAME_LENGTH)
 	validateString("scope", scope :: string, Constants.MAX_SCOPE_LENGTH)
 
-	if self.dataStores[name] :: any == nil then
+	if self.dataStores[name] == nil then
 		self.dataStores[name] = {}
 	end
 
@@ -67,6 +75,25 @@ function DataStoreServiceMock.GetDataStore<T>(
 	end
 
 	return self.dataStores[name][scope :: string]
+end
+
+function DataStoreServiceMock.GetOrderedDataStore(self: DataStoreServiceMock, name: string, scope: string?)
+	assertServer()
+
+	scope = if typeof(scope) ~= "string" then "global" else scope
+
+	validateString("name", name, Constants.MAX_NAME_LENGTH)
+	validateString("scope", scope :: string, Constants.MAX_SCOPE_LENGTH)
+
+	if self.orderedDataStores[name] == nil then
+		self.orderedDataStores[name] = {}
+	end
+
+	if self.orderedDataStores[name][scope :: string] :: any == nil then
+		self.orderedDataStores[name][scope :: string] = OrderedDataStore.new()
+	end
+
+	return self.orderedDataStores[name][scope :: string]
 end
 
 function DataStoreServiceMock.GetRequestBudgetForRequestType(
