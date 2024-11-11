@@ -90,7 +90,7 @@ function DataStoreServiceMock.GetOrderedDataStore(self: DataStoreServiceMock, na
 	end
 
 	if self.orderedDataStores[name][scope :: string] :: any == nil then
-		self.orderedDataStores[name][scope :: string] = OrderedDataStore.new()
+		self.orderedDataStores[name][scope :: string] = OrderedDataStore.new(self.budget, self.errors, self.yield)
 	end
 
 	return self.orderedDataStores[name][scope :: string]
