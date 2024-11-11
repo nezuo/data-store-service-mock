@@ -6,47 +6,15 @@ local DataStoreKeyInfo = require(script.Parent.DataStoreKeyInfo)
 local SimulatedErrors = require(script.Parent.SimulatedErrors)
 local SimulatedYield = require(script.Parent.SimulatedYield)
 local validateString = require(script.Parent.validateString)
-
-type Table = { [any]: any }
-local function copyDeep(value: Table): Table
-	if typeof(value) ~= "table" then
-		return value
-	end
-
-	local copy = {}
-
-	for a, b in value do
-		copy[a] = copyDeep(b)
-	end
-
-	return copy
-end
-
-local function copyDataStoreKeyInfo(keyInfo): DataStoreKeyInfo.DataStoreKeyInfo
-	return DataStoreKeyInfo.new(
-		keyInfo.CreatedTime,
-		keyInfo.UpdatedTime,
-		keyInfo.Version,
-		keyInfo.userIds,
-		keyInfo.metadata
-	)
-end
+local copyDeep = require(script.Parent.copyDeep)
 
 local DataStore = {}
 DataStore.__index = DataStore
 
-export type KeyInfo = {
-	CreatedTime: number,
-	UpdatedTime: number,
-	Version: string,
-	userIds: DataStoreKeyInfo.UserIds,
-	metadata: DataStoreKeyInfo.Metadata,
-}
-
 export type DataStore<T> = typeof(setmetatable(
 	{} :: {
 		data: T,
-		keyInfos: { [string]: KeyInfo },
+		keyInfos: { [string]: DataStoreKeyInfo.DataStoreKeyInfo },
 		getCache: {},
 		budget: Budget.Budget,
 		errors: SimulatedErrors.SimulatedErrors,
@@ -55,7 +23,11 @@ export type DataStore<T> = typeof(setmetatable(
 	DataStore
 ))
 
-function DataStore.new<T>(budget: Budget.Budget, errors: SimulatedErrors.SimulatedErrors, yield: SimulatedYield.SimulatedYield): DataStore<T>
+function DataStore.new<T>(
+	budget: Budget.Budget,
+	errors: SimulatedErrors.SimulatedErrors,
+	yield: SimulatedYield.SimulatedYield
+): DataStore<T>
 	return setmetatable({
 		data = {},
 		keyInfos = {},
@@ -77,8 +49,8 @@ function DataStore.write<T>(
 
 	local keyInfo = self.keyInfos[key]
 
-	if keyInfo ~= nil then
-		local version = tostring(tonumber(keyInfo.Version) + 1)
+	if keyInfo :: any ~= nil then
+		local version = tostring(tonumber(keyInfo.Version) :: number + 1)
 
 		self.keyInfos[key] = DataStoreKeyInfo.new(keyInfo.CreatedTime, now, version, userIds, metadata)
 	else
@@ -86,7 +58,7 @@ function DataStore.write<T>(
 	end
 
 	-- Data is written after key info because DataStoreKeyInfo.new can throw an error.
-	self.data[key] = copyDeep(data)
+	(self.data :: any)[key] = copyDeep(data)
 end
 
 function DataStore.GetAsync<T>(
@@ -97,17 +69,17 @@ function DataStore.GetAsync<T>(
 	validateString("key", key, Constants.MAX_KEY_LENGTH)
 
 	if (options == nil or options.UseCache) and self.getCache[key] ~= nil and os.clock() < self.getCache[key] then
-		local data = self.data[key]
+		local data = (self.data :: any)[key]
 		local keyInfo = self.keyInfos[key]
 
 		if data == nil then
 			return nil, nil
 		end
 
-		return copyDeep(data), copyDataStoreKeyInfo(keyInfo)
+		return copyDeep(data), DataStoreKeyInfo.copy(keyInfo)
 	end
 
-	if self.errors ~= nil then
+	if self.errors :: any ~= nil then
 		self.errors:simulateError("GetAsync")
 	end
 
@@ -117,24 +89,24 @@ function DataStore.GetAsync<T>(
 
 	self.yield:yield()
 
-	local data = self.data[key]
+	local data = (self.data :: any)[key]
 	local keyInfo = self.keyInfos[key]
 
 	if data == nil then
 		return nil, nil
 	end
 
-	return copyDeep(data), copyDataStoreKeyInfo(keyInfo)
+	return copyDeep(data), DataStoreKeyInfo.copy(keyInfo)
 end
 
-function DataStore.UpdateAsync<T>(self: T, key: string, transform)
+function DataStore.UpdateAsync<T>(self: DataStore<T>, key: string, transform)
 	validateString("key", key, Constants.MAX_KEY_LENGTH)
 
 	if typeof(transform) ~= "function" then
 		error("`transform` must be a function")
 	end
 
-	if self.errors ~= nil then
+	if self.errors :: any ~= nil then
 		self.errors:simulateError("UpdateAsync")
 	end
 
@@ -147,8 +119,8 @@ function DataStore.UpdateAsync<T>(self: T, key: string, transform)
 	self.budget:yieldForBudget(requestsTypes)
 	self.yield:yield()
 
-	local oldValue = copyDeep(self.data[key])
-	local oldKeyInfo = if oldValue ~= nil then copyDataStoreKeyInfo(self.keyInfos[key]) else nil
+	local oldValue = copyDeep((self.data :: any)[key])
+	local oldKeyInfo = if oldValue ~= nil then DataStoreKeyInfo.copy(self.keyInfos[key]) else nil
 
 	local ok, transformed, userIds, metadata = pcall(transform, oldValue, oldKeyInfo)
 
@@ -167,20 +139,20 @@ function DataStore.UpdateAsync<T>(self: T, key: string, transform)
 
 	self.getCache[key] = os.clock() + Constants.GET_CACHE_DURATION
 
-	return copyDeep(transformed), copyDataStoreKeyInfo(self.keyInfos[key])
+	return copyDeep(transformed), DataStoreKeyInfo.copy(self.keyInfos[key])
 end
 
 function DataStore.RemoveAsync<T>(self: DataStore<T>, key: string)
 	validateString("key", key, Constants.MAX_KEY_LENGTH)
 
-	if self.errors ~= nil then
+	if self.errors :: any ~= nil then
 		self.errors:simulateError("RemoveAsync")
 	end
 
 	self.budget:yieldForBudget({ Enum.DataStoreRequestType.SetIncrementAsync })
 	self.yield:yield()
 
-	local oldValue = self.data[key]
+	local oldValue = (self.data :: any)[key]
 	local keyInfo = self.keyInfos[key]
 
 	if oldValue == nil then
@@ -189,7 +161,7 @@ function DataStore.RemoveAsync<T>(self: DataStore<T>, key: string)
 
 	self:write(key)
 
-	return copyDeep(oldValue), copyDataStoreKeyInfo(keyInfo)
+	return copyDeep(oldValue), DataStoreKeyInfo.copy(keyInfo)
 end
 
 return DataStore

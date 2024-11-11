@@ -14,7 +14,11 @@ OrderedDataStore.__index = OrderedDataStore
 
 export type OrderedDataStore = typeof(setmetatable({} :: {}, OrderedDataStore))
 
-function OrderedDataStore.new(budget: Budget.Budget, errors: SimulatedErrors.SimulatedErrors, yield: SimulatedYield.SimulatedYield): OrderedDataStore
+function OrderedDataStore.new(
+	budget: Budget.Budget,
+	errors: SimulatedErrors.SimulatedErrors,
+	yield: SimulatedYield.SimulatedYield
+): OrderedDataStore
 	return setmetatable({
 		data = {},
 		keyInfos = {},
