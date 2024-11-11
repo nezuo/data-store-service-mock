@@ -21,7 +21,7 @@ function DataStoreKeyInfo.new(
 	updatedTime: number,
 	version: string,
 	userIds: UserIds?,
-	metadata: Metadata
+	metadata: Metadata?
 ): DataStoreKeyInfo
 	local userIdsType = typeof(userIds)
 
