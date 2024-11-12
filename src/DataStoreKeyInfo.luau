@@ -51,16 +51,6 @@ function DataStoreKeyInfo.new(
 	}, DataStoreKeyInfo)
 end
 
-function DataStoreKeyInfo.copy(keyInfo: DataStoreKeyInfo): DataStoreKeyInfo
-	return DataStoreKeyInfo.new(
-		keyInfo.CreatedTime,
-		keyInfo.UpdatedTime,
-		keyInfo.Version,
-		keyInfo.userIds,
-		keyInfo.metadata
-	)
-end
-
 function DataStoreKeyInfo.GetUserIds(self: DataStoreKeyInfo): UserIds
 	return table.clone(self.userIds)
 end
