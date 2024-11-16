@@ -1,3 +1,13 @@
+--!strict
+--!native
+
+export type RequestBudget = {
+	INITIAL_BUDGET: number,
+	RATE: number,
+	RATE_PER_PLAYER: number,
+	MAX_BUDGET_FACTOR: number,
+}
+
 return {
 	MAX_NAME_LENGTH = 50,
 	MAX_SCOPE_LENGTH = 50,
@@ -44,5 +54,19 @@ return {
 			RATE_PER_PLAYER = 2,
 			MAX_BUDGET_FACTOR = 3,
 		},
+	},
+} :: {
+	MAX_NAME_LENGTH: number,
+	MAX_SCOPE_LENGTH: number,
+	MAX_KEY_LENGTH: number,
+
+	MAX_THROTTLE_QUEUE_SIZE: number,
+
+	BUDGET_UPDATE_INTERVAL: number,
+
+	GET_CACHE_DURATION: number,
+
+	REQUEST_BUDGETS: {
+		[Enum.DataStoreRequestType]: RequestBudget,
 	},
 }
