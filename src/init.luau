@@ -7,6 +7,39 @@ local SimulatedErrors = require(script.SimulatedErrors)
 local SimulatedYield = require(script.SimulatedYield)
 local validateString = require(script.validateString)
 
+type SimulatedErrors = {
+	addSimulatedErrors: (self: SimulatedErrors, amount: number) -> (),
+}
+
+type SimulatedYield = {
+	startYield: (self: SimulatedYield) -> (),
+	stopYield: (self: SimulatedYield) -> (),
+}
+
+type Budget = {
+	setMaxThrottleQueueSize: (self: Budget, size: number) -> (),
+	update: (self: Budget) -> (),
+}
+
+export type DataStore = {
+	write: (self: DataStore, key: string, data: any, userIds: { number }?, metadata: { [any]: any }?) -> (),
+	GetAsync: (self: DataStore, key: string, options: DataStoreGetOptions?) -> (unknown, DataStoreKeyInfo?),
+	UpdateAsync: (
+		self: DataStore,
+		key: string,
+		transform: (unknown, DataStoreKeyInfo?) -> (unknown, { number }?, { [any]: any }?)
+	) -> (unknown, DataStoreKeyInfo?),
+	RemoveAsync: (self: DataStore, key: string) -> (unknown, DataStoreKeyInfo?),
+}
+
+export type DataStoreServiceMock = {
+	errors: SimulatedErrors,
+	yield: SimulatedYield,
+	budget: Budget,
+	GetDataStore: (self: DataStoreServiceMock, name: string, scope: string?) -> DataStore,
+	GetRequestBudgetForRequestType: (self: DataStoreServiceMock, requestType: Enum.DataStoreRequestType) -> number,
+}
+
 local function assertServer()
 	if not RunService:IsServer() then
 		error("DataStore can't be accessed from the client")
@@ -63,4 +96,4 @@ function DataStoreServiceMock:GetRequestBudgetForRequestType(requestType)
 	return budget
 end
 
-return DataStoreServiceMock
+return (DataStoreServiceMock :: any) :: { new: () -> DataStoreServiceMock, manual: () -> DataStoreServiceMock }
