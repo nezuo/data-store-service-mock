@@ -12,6 +12,7 @@ type SimulatedErrors = {
 }
 
 type SimulatedYield = {
+	setYieldDuration: (self: SimulatedYield, duration: number) -> (),
 	startYield: (self: SimulatedYield) -> (),
 	stopYield: (self: SimulatedYield) -> (),
 }
